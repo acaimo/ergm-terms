@@ -1,0 +1,26 @@
+InitErgmTerm.localctriple<-function (nw, arglist, ...) {
+  a <- check.ErgmTerm(nw, arglist,
+                      varnames = c("x", "attrname"),
+                      vartypes = c("matrix,network", "character"),
+                      defaultvalues = list(NULL, NULL),
+                      required = c(TRUE, FALSE))
+  x<-a$x;attrname<-a$attrname
+  if(is.network(x))
+    xm<-as.matrix(x, matrix.type="adjacency", attrname)
+  else if(is.character(x))
+    xm<-as.matrix(nw, matrix.type="adjacency", x)
+  else
+    xm<-as.matrix(x)
+  if(!isSymmetric(xm)){
+    warning("localctriple requires an undirected neighborhood. Using only mutual ties.", call.=FALSE)
+    xm <- pmin(xm[],(t(xm))[])
+  }
+  if(!is.null(attrname))
+    coef.names <- paste("localctriple", attrname, sep = ".")
+  else
+    coef.names <- paste("localctriple", as.character(sys.call(0)[[3]][2]),
+                        sep = ".")
+  inputs <- c(NROW(xm), as.double(xm))
+  attr(inputs, "ParamsBeforeCov") <- 1
+  list(name="localctriple", coef.names=coef.names, inputs=inputs)
+}
